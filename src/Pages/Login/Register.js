@@ -2,26 +2,52 @@ import React from "react";
 import {
   useCreateUserWithEmailAndPassword,
   useSignInWithGoogle,
+  useUpdateProfile,
 } from "react-firebase-hooks/auth";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import auth from "../../firebase.init";
+import Loading from "./../Shared/Loading";
 
 const Register = () => {
   const [createUserWithEmailAndPassword, user, loading, error] =
-    useCreateUserWithEmailAndPassword(auth);
+    useCreateUserWithEmailAndPassword(auth, { sendEmailVerification: true });
+
+  const [updateProfile, updating, updatingError] = useUpdateProfile(auth);
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm();
-  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(
-    auth,
-    { sendEmailVerification: true }
-  );
+
+  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle();
+
+  let signInError;
+
+  if (error || gError || updatingError) {
+    signInError = (
+      <p className="text-red-500">
+        {error?.message || gError?.message || updatingError?.message}
+      </p>
+    );
+  }
+  if (loading || gLoading || updating) {
+    return <Loading></Loading>;
+  }
+  // user.providerData[0]?.providerId === "password"
+  if (user && !user.emailVerified) {
+    return (
+      <div className="text-center mt-5">
+        <h3 className="text-danger">Your Email is not verified!!</h3>
+        <h5 className="text-success"> Please Verify your email address</h5>
+      </div>
+    );
+  }
 
   const onSubmit = (data) => {
     console.log(data);
+    createUserWithEmailAndPassword(data.email, data.password);
+    // await updateProfile({ displayName: data.name });
   };
 
   return (
@@ -117,6 +143,7 @@ const Register = () => {
                 )}
               </label>
             </div>
+            {signInError}
 
             <input
               type="submit"

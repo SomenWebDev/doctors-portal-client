@@ -112,6 +112,12 @@ const Login = () => {
             </div>
             {signInError}
 
+            <p>
+              <Link className="text-primary" to="/forgotpassword">
+                Forgot Password?
+              </Link>
+            </p>
+
             <input
               type="submit"
               className="btn w-full max-w-xs text-white"
