@@ -5,7 +5,7 @@ import {
   useUpdateProfile,
 } from "react-firebase-hooks/auth";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import auth from "../../firebase.init";
 import Loading from "./../Shared/Loading";
 
@@ -22,6 +22,8 @@ const Register = () => {
 
   const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle();
 
+  const navigate = useNavigate();
+
   let signInError;
 
   if (error || gError || updatingError) {
@@ -35,19 +37,13 @@ const Register = () => {
     return <Loading></Loading>;
   }
   // user.providerData[0]?.providerId === "password"
-  if (user && !user.emailVerified) {
-    return (
-      <div className="text-center mt-5">
-        <h3 className="text-danger">Your Email is not verified!!</h3>
-        <h5 className="text-success"> Please Verify your email address</h5>
-      </div>
-    );
-  }
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log(data);
-    createUserWithEmailAndPassword(data.email, data.password);
-    // await updateProfile({ displayName: data.name });
+    await createUserWithEmailAndPassword(data.email, data.password);
+    await updateProfile({ displayName: data.name });
+    console.log("update done");
+    navigate("/appointment");
   };
 
   return (

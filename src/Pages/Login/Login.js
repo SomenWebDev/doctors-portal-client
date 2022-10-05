@@ -7,7 +7,7 @@ import {
 import { useForm } from "react-hook-form";
 
 import Loading from "../Shared/Loading";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [signInWithEmailAndPassword, user, loading, error] =
@@ -20,9 +20,13 @@ const Login = () => {
   const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
 
   let signInError;
+  let navigate = useNavigate();
+  let location = useLocation();
+
+  let from = location.state?.from?.pathname || "/";
 
   if (user || gUser) {
-    console.log(user || gUser);
+    navigate(from, { replace: true });
   }
 
   if (loading || gLoading) {
