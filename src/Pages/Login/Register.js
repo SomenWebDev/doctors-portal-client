@@ -4,46 +4,53 @@ import {
   useSignInWithGoogle,
   useUpdateProfile,
 } from "react-firebase-hooks/auth";
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
 import auth from "../../firebase.init";
-import Loading from "./../Shared/Loading";
+import { useForm } from "react-hook-form";
+import Loading from "../Shared/Loading";
+import { Link, useNavigate } from "react-router-dom";
+import useToken from "../../hooks/useToken";
 
 const Register = () => {
-  const [createUserWithEmailAndPassword, user, loading, error] =
-    useCreateUserWithEmailAndPassword(auth, { sendEmailVerification: true });
-
-  const [updateProfile, updating, updatingError] = useUpdateProfile(auth);
+  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm();
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth);
 
-  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle();
+  const [updateProfile, updating, updateError] = useUpdateProfile(auth);
+
+  const [token] = useToken(user || gUser);
 
   const navigate = useNavigate();
 
   let signInError;
 
-  if (error || gError || updatingError) {
-    signInError = (
-      <p className="text-red-500">
-        {error?.message || gError?.message || updatingError?.message}
-      </p>
-    );
-  }
   if (loading || gLoading || updating) {
     return <Loading></Loading>;
   }
-  // user.providerData[0]?.providerId === "password"
+
+  if (token) {
+    navigate("/appointment");
+  }
+
+  if (error || gError || updateError) {
+    signInError = (
+      <p className="text-red-500">
+        <small>
+          {error?.message || gError?.message || updateError?.message}
+        </small>
+      </p>
+    );
+  }
 
   const onSubmit = async (data) => {
-    console.log(data);
     await createUserWithEmailAndPassword(data.email, data.password);
     await updateProfile({ displayName: data.name });
     console.log("update done");
-    navigate("/appointment");
+    // navigate("/appointment");
   };
 
   return (

@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 
 import Loading from "../Shared/Loading";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import useToken from "../../hooks/useToken";
 
 const Login = () => {
   const [signInWithEmailAndPassword, user, loading, error] =
@@ -19,14 +20,18 @@ const Login = () => {
   } = useForm();
   const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
 
+  const [token] = useToken(user || gUser);
+
   let signInError;
   let navigate = useNavigate();
   let location = useLocation();
 
   let from = location.state?.from?.pathname || "/";
 
-  if (user || gUser) {
+  if (token) {
     navigate(from, { replace: true });
+  }
+  if (user && !user.emailVerified) {
   }
 
   if (loading || gLoading) {
@@ -115,12 +120,6 @@ const Login = () => {
               </label>
             </div>
             {signInError}
-
-            <p>
-              <Link className="text-primary" to="/forgotpassword">
-                Forgot Password?
-              </Link>
-            </p>
 
             <input
               type="submit"
